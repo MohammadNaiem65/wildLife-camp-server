@@ -1,0 +1,18 @@
+{
+	"name": "wild-life-camp-server",
+	"version": "1.0.0",
+	"main": "index.js",
+	"repository": "https://github.com/programming-hero-web-course1/b7a12-summer-camp-server_side-MohammadNaiem65.git",
+	"author": "Mohammad Naiem",
+	"license": "MIT",
+	"scripts": {
+		"start": "node index.js",
+		"test": "nodemon index.js"
+	},
+	"dependencies": {
+		"cors": "^2.8.5",
+		"dotenv": "^16.3.1",
+		"express": "^4.18.2",
+		"mongodb": "^5.7.0"
+	}
+}
