@@ -53,6 +53,11 @@ async function run() {
 			res.send(topClasses);
 		});
 
+		app.get('/instructors', async (req, res) =>{
+			const instructors = await instructorsCollection.find().toArray()
+			res.send(instructors);
+		})
+
 		app.get('/instructors/6', async (req, res) => {
 			const instructors = await instructorsCollection.find().toArray();
 			const topInstructors = instructors.slice(0, 6);
