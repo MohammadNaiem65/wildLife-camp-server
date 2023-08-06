@@ -40,6 +40,11 @@ async function run() {
 			res.send('Welcome to Wild Life Camp');
 		});
 
+		app.get('/classes', async (req, res) => {
+			const classes = await classesCollection.find().toArray();
+			res.send(classes);
+		});
+
 		// Send a ping to confirm a successful connection
 		await client.db('admin').command({ ping: 1 });
 		console.log(
