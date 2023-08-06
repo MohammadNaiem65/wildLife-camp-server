@@ -53,6 +53,12 @@ async function run() {
 			res.send(topClasses);
 		});
 
+		app.get('/instructors/6', async (req, res) => {
+			const instructors = await instructorsCollection.find().toArray();
+			const topInstructors = instructors.slice(0, 6);
+			res.send(instructors);
+		});
+
 		// Send a ping to confirm a successful connection
 		await client.db('admin').command({ ping: 1 });
 		console.log(
