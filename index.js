@@ -1,15 +1,17 @@
 const express = require('express');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const cors = require('cors');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 
 // ! app initialization using middleware
 var app = express();
 app.use(express.json());
+app.use(cors());
 
 // ! Connect Database
 
-const uri = `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASS}@wildlife-camp.chmos0m.mongodb.net/?retryWrites=true&w=majority`;
+const uri = process.env.MONGODB_URI;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -24,6 +26,14 @@ async function run() {
 	try {
 		// Connect the client to the server
 		await client.connect();
+
+		// ! Get the collections
+		const classesCollection = client
+			.db('wildLifeCamp')
+			.collection('classes');
+		const instructorsCollection = client
+			.db('wildLifeCamp')
+			.collection('instructors');
 
 		// * Managing the routes
 		app.get('/', (req, res) => {
