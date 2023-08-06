@@ -45,6 +45,14 @@ async function run() {
 			res.send(classes);
 		});
 
+		app.get('/classes/6', async (req, res) => {
+			const classes = await classesCollection.find().toArray();
+			const topClasses = classes
+				.sort((a, b) => a.seats - b.seats)
+				.slice(0, 6);
+			res.send(topClasses);
+		});
+
 		// Send a ping to confirm a successful connection
 		await client.db('admin').command({ ping: 1 });
 		console.log(
