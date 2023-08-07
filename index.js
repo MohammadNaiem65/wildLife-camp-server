@@ -44,6 +44,12 @@ async function run() {
 			console.log(userData);
 		});
 
+		app.post('/users/role', async (req, res) => {
+			const newUser = req.body;
+			const result = await usersCollection.insertOne(newUser);
+			res.send(result);
+		});
+
 		// ! Instructor related API's
 		app.get('/users/instructors', async (req, res) => {
 			const instructors = await usersCollection
