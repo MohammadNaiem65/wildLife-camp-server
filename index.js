@@ -28,40 +28,51 @@ async function run() {
 		await client.connect();
 
 		// ! Get the collections
+		const usersCollection = client.db('wildLifeCamp').collection('users');
 		const classesCollection = client
 			.db('wildLifeCamp')
 			.collection('classes');
-		const instructorsCollection = client
-			.db('wildLifeCamp')
-			.collection('instructors');
 
 		// * Managing the routes
 		app.get('/', (req, res) => {
 			res.send('Welcome to Wild Life Camp');
 		});
 
+		// ! User related API's
+		app.post('/users', async (req, res) => {
+			const userData = req.body;
+			console.log(userData);
+		});
+
+		// ! Instructor related API's
+		app.get('/users/instructors', async (req, res) => {
+			const instructors = await usersCollection
+				.find({ role: 'instructor' }, { sort: { name: 1 } })
+				.toArray();
+			res.send(instructors);
+		});
+
+		app.get('/users/instructors/6', async (req, res) => {
+			const instructors = await usersCollection
+				.find({ role: 'instructor' })
+				.limit(6)
+				.toArray();
+			res.send(instructors);
+		});
+
+		// ! Class related API's
 		app.get('/classes', async (req, res) => {
 			const classes = await classesCollection.find().toArray();
 			res.send(classes);
 		});
 
 		app.get('/classes/6', async (req, res) => {
-			const classes = await classesCollection.find().toArray();
-			const topClasses = classes
-				.sort((a, b) => a.seats - b.seats)
-				.slice(0, 6);
-			res.send(topClasses);
-		});
-
-		app.get('/instructors', async (req, res) =>{
-			const instructors = await instructorsCollection.find().toArray()
-			res.send(instructors);
-		})
-
-		app.get('/instructors/6', async (req, res) => {
-			const instructors = await instructorsCollection.find().toArray();
-			const topInstructors = instructors.slice(0, 6);
-			res.send(instructors);
+			const classes = await classesCollection
+				.find()
+				.sort({ seats: 1 })
+				.limit(6)
+				.toArray();
+			res.send(classes);
 		});
 
 		// Send a ping to confirm a successful connection
