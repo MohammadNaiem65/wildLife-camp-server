@@ -44,6 +44,15 @@ async function run() {
 			console.log(userData);
 		});
 
+		app.get('/users/role', async (req, res) => {
+			const email = req.query.email;
+			const roleObj = await usersCollection.findOne(
+				{ email: email },
+				{ projection: { role: 1, _id: 0 } }
+			);
+			res.json(roleObj.role);
+		});
+
 		app.post('/users/role', async (req, res) => {
 			const newUser = req.body;
 			const result = await usersCollection.insertOne(newUser);
