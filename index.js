@@ -50,7 +50,7 @@ async function run() {
 				{ email: email },
 				{ projection: { role: 1, _id: 0 } }
 			);
-			res.json(roleObj.role);
+			res.send(roleObj);
 		});
 
 		app.post('/users/role', async (req, res) => {
@@ -88,6 +88,15 @@ async function run() {
 				.limit(6)
 				.toArray();
 			res.send(classes);
+		});
+
+		app.get('/instructor/classes', async (req, res) => {
+			const email = req.query.email;
+			const options = { projection: { name: 1, attended: 1, status: 1 } };
+			const usersClasses = await classesCollection
+				.find({ instructor_email: email }, options)
+				.toArray();
+			res.send(usersClasses);
 		});
 
 		// Send a ping to confirm a successful connection
