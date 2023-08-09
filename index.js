@@ -99,6 +99,20 @@ async function run() {
 			res.send(usersClasses);
 		});
 
+		app.post('/instructor/classes/class', async (req, res) => {
+			const classData = req.body;
+			const result = await classesCollection.insertOne(classData);
+			res.send(result);
+		});
+
+		app.delete('/instructor/classes/class/:id', async (req, res) => {
+			const id = req.params.id;
+			const result = await classesCollection.deleteOne({
+				_id: new ObjectId(id),
+			});
+			res.send(result);
+		});
+
 		// Send a ping to confirm a successful connection
 		await client.db('admin').command({ ping: 1 });
 		console.log(
