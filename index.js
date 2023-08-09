@@ -77,17 +77,63 @@ async function run() {
 
 		// ! Class related API's
 		app.get('/classes', async (req, res) => {
-			const classes = await classesCollection.find().toArray();
+			const classes = await classesCollection
+				.find({ status: 'approved' })
+				.toArray();
 			res.send(classes);
 		});
 
 		app.get('/classes/6', async (req, res) => {
 			const classes = await classesCollection
-				.find()
+				.find({ status: 'approved' })
 				.sort({ seats: 1 })
 				.limit(6)
 				.toArray();
 			res.send(classes);
+		});
+
+		app.get('/classes/class/:id', async (req, res) => {
+			const id = req.params.id;
+			const options = {
+				projection: { name: 1, price: 1, img: 1 },
+			};
+			const result = await classesCollection.findOne(
+				{
+					_id: new ObjectId(id),
+				},
+				options
+			);
+			res.send(result);
+		});
+
+		app.patch('/classes/class/:id', async (req, res) => {
+			const id = req.params.id;
+			const data = req.body;
+			const { name, img, price, status } = data;
+			const query = {
+				_id: new ObjectId(id),
+			};
+			const updatedData = {
+				$set: {
+					name,
+					img,
+					price,
+					status,
+				},
+			};
+			const result = await classesCollection.updateOne(
+				query,
+				updatedData
+			);
+			res.send(result);
+		});
+
+		app.delete('/classes/class/:id', async (req, res) => {
+			const id = req.params.id;
+			const result = await classesCollection.deleteOne({
+				_id: new ObjectId(id),
+			});
+			res.send(result);
 		});
 
 		app.get('/instructor/classes', async (req, res) => {
@@ -102,14 +148,6 @@ async function run() {
 		app.post('/instructor/classes/class', async (req, res) => {
 			const classData = req.body;
 			const result = await classesCollection.insertOne(classData);
-			res.send(result);
-		});
-
-		app.delete('/instructor/classes/class/:id', async (req, res) => {
-			const id = req.params.id;
-			const result = await classesCollection.deleteOne({
-				_id: new ObjectId(id),
-			});
 			res.send(result);
 		});
 
