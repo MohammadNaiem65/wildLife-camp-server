@@ -136,6 +136,64 @@ async function run() {
 			res.send(result);
 		});
 
+		// ! Student related classes API's
+		app.patch('/student/class/select/:id', async (req, res) => {
+			const id = req.params.id;
+			const email = req.query.email;
+
+			const updatedDoc = {
+				$push: {
+					selectedClasses: id,
+				},
+			};
+			const result = await usersCollection.updateOne(
+				{ email },
+				updatedDoc
+			);
+			res.send(result);
+		});
+
+		app.get('/student/classes/selected', (req, res) => {
+			const email = req.query.email;
+
+			// Get selected classes id 
+			const getClassesId = async () => {
+				const options = { projection: { _id: 0, selectedClasses: 1 } };
+				const result = await usersCollection.findOne(
+					{ email: email },
+					options
+				);
+				return result.selectedClasses;
+			};
+
+			// Get the selected classes details
+			const getClasses = async (classIds) => {
+				const classes = [];
+				const options = {
+					projection: {
+						status: 0,
+						instructor_email: 0,
+					},
+				};
+				for (const id of classIds) {
+					const c = await classesCollection.findOne(
+						{
+							_id: new ObjectId(id),
+						},
+						options
+					);
+					classes.push(c);
+				}
+				return classes;
+			};
+
+			getClassesId()
+				.then((classIds) => getClasses(classIds))
+				.then((classes) => res.send(classes))
+				.catch((err) => res.status(500).send(err));
+		});
+
+		// ! Instructor related classes API's
 		app.get('/instructor/classes', async (req, res) => {
 			const email = req.query.email;
 			const options = { projection: { name: 1, attended: 1, status: 1 } };
