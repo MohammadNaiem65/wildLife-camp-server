@@ -138,6 +138,7 @@ async function run() {
 
 		// ! Student related classes API's
 		app.patch('/student/class/select/:id', async (req, res) => {
+			// Class id and User email
 			const id = req.params.id;
 			const email = req.query.email;
 
@@ -156,7 +157,7 @@ async function run() {
 		app.get('/student/classes/selected', (req, res) => {
 			const email = req.query.email;
 
-			// Get selected classes id 
+			// Get selected classes id
 			const getClassesId = async () => {
 				const options = { projection: { _id: 0, selectedClasses: 1 } };
 				const result = await usersCollection.findOne(
@@ -191,6 +192,24 @@ async function run() {
 				.then((classIds) => getClasses(classIds))
 				.then((classes) => res.send(classes))
 				.catch((err) => res.status(500).send(err));
+		});
+
+		app.patch('/student/class/enroll/:id', async (req, res) => {
+			// Class Id and User email
+			const id = req.params.id;
+			const email = req.query.email;
+
+			const updatedDoc = {
+				$push: {
+					enrolledClasses: id,
+				},
+			};
+			const result = await usersCollection.updateOne(
+				{ email },
+				updatedDoc
+			);
+
+			res.send(result);
 		});
 
 		// ! Instructor related classes API's
