@@ -195,9 +195,20 @@ async function run() {
 			};
 
 			getClassesId('selectedClasses', email)
-				.then((classIds) => getClasses(classIds, options))
+				.then((classIds) => {
+					if (classIds) {
+						return getClasses(classIds, options);
+					} else {
+						res.json({ message: 'No data found.' });
+						throw new Error('No classes ids to process further!');
+					}
+				})
 				.then((classes) => res.send(classes))
-				.catch((err) => res.status(500).send(err));
+				.catch((err) => {
+					if (err.message !== 'No classes ids to process further!') {
+						res.status(500).send(err);
+					}
+				});
 		});
 
 		app.patch('/student/classes/selected/remove/:id', async (req, res) => {
@@ -267,10 +278,21 @@ async function run() {
 				},
 			};
 
-			getClassesId('enrolledClasses', email)
-				.then((classIds) => getClasses(classIds, options))
+			getClassesId('selectedClasses', email)
+				.then((classIds) => {
+					if (classIds) {
+						return getClasses(classIds, options);
+					} else {
+						res.json({ message: 'No data found.' });
+						throw new Error('No classes ids to process further!');
+					}
+				})
 				.then((classes) => res.send(classes))
-				.catch((err) => res.status(500).send(err));
+				.catch((err) => {
+					if (err.message !== 'No classes ids to process further!') {
+						res.status(500).send(err);
+					}
+				});
 		});
 
 		// ! Instructor related classes API's
@@ -312,6 +334,34 @@ async function run() {
 				});
 				res.send(result);
 			}
+		});
+
+		app.get('/admin/users/all', async (req, res) => {
+			const allUsers = await usersCollection
+				.find()
+				.sort({ role: 1, name: 1 })
+				.toArray();
+			res.send(allUsers);
+		});
+
+		app.patch('/admin/user/role/:id', async (req, res) => {
+			// User id and role
+			const id = req.params.id;
+			const role = req.query.role;
+
+			const updatedField = {
+				$set: {
+					role,
+				},
+			};
+			const result = await usersCollection.updateOne(
+				{
+					_id: new ObjectId(id),
+				},
+				updatedField
+			);
+
+			res.send(result);
 		});
 
 		// Send a ping to confirm a successful connection
