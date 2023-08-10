@@ -33,6 +33,18 @@ async function run() {
 			.db('wildLifeCamp')
 			.collection('classes');
 
+		// * Common Functions
+		// Get required classes id
+		const getClassesId = async (property, email) => {
+			const options = { projection: { _id: 0 } };
+			options.projection[property] = 1;
+			const result = await usersCollection.findOne(
+				{ email: email },
+				options
+			);
+			return result[property];
+		};
+
 		// * Managing the routes
 		app.get('/', (req, res) => {
 			res.send('Welcome to Wild Life Camp');
@@ -157,16 +169,6 @@ async function run() {
 		app.get('/student/classes/selected', (req, res) => {
 			const email = req.query.email;
 
-			// Get selected classes id
-			const getClassesId = async () => {
-				const options = { projection: { _id: 0, selectedClasses: 1 } };
-				const result = await usersCollection.findOne(
-					{ email: email },
-					options
-				);
-				return result.selectedClasses;
-			};
-
 			// Get the selected classes details
 			const getClasses = async (classIds) => {
 				const classes = [];
@@ -188,7 +190,7 @@ async function run() {
 				return classes;
 			};
 
-			getClassesId()
+			getClassesId('selectedClasses', email)
 				.then((classIds) => getClasses(classIds))
 				.then((classes) => res.send(classes))
 				.catch((err) => res.status(500).send(err));
@@ -198,19 +200,40 @@ async function run() {
 			// Class Id and User email
 			const id = req.params.id;
 			const email = req.query.email;
+			let result;
 
-			const updatedDoc = {
-				$push: {
-					enrolledClasses: id,
-				},
+			const completeEnrollment = async () => {
+				const updatedDoc = {
+					$push: {
+						enrolledClasses: id,
+					},
+					$pull: {
+						selectedClasses: id,
+					},
+				};
+				result = await usersCollection.updateOne({ email }, updatedDoc);
 			};
-			const result = await usersCollection.updateOne(
-				{ email },
-				updatedDoc
-			);
 
-			res.send(result);
+			const updateClassData = async () => {
+				const updatedData = {
+					$inc: {
+						attended: 1,
+						seats: -1,
+					},
+				};
+
+				await classesCollection.updateOne(
+					{ _id: new ObjectId(id) },
+					updatedData
+				);
+			};
+
+			completeEnrollment()
+				.then(() => updateClassData())
+				.then(() => res.send(result))
+				.catch((err) => res.send(err));
 		});
+
 
 		// ! Instructor related classes API's
 		app.get('/instructor/classes', async (req, res) => {
