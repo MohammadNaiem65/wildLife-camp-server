@@ -45,6 +45,22 @@ async function run() {
 			return result[property];
 		};
 
+		// Get the selected classes details
+		const getClasses = async (classIds, options) => {
+			const classes = [];
+
+			for (const id of classIds) {
+				const c = await classesCollection.findOne(
+					{
+						_id: new ObjectId(id),
+					},
+					options
+				);
+				classes.push(c);
+			}
+			return classes;
+		};
+
 		// * Managing the routes
 		app.get('/', (req, res) => {
 			res.send('Welcome to Wild Life Camp');
@@ -168,30 +184,15 @@ async function run() {
 
 		app.get('/student/classes/selected', (req, res) => {
 			const email = req.query.email;
-
-			// Get the selected classes details
-			const getClasses = async (classIds) => {
-				const classes = [];
-				const options = {
-					projection: {
-						status: 0,
-						instructor_email: 0,
-					},
-				};
-				for (const id of classIds) {
-					const c = await classesCollection.findOne(
-						{
-							_id: new ObjectId(id),
-						},
-						options
-					);
-					classes.push(c);
-				}
-				return classes;
+			const options = {
+				projection: {
+					status: 0,
+					instructor_email: 0,
+				},
 			};
 
 			getClassesId('selectedClasses', email)
-				.then((classIds) => getClasses(classIds))
+				.then((classIds) => getClasses(classIds, options))
 				.then((classes) => res.send(classes))
 				.catch((err) => res.status(500).send(err));
 		});
@@ -234,6 +235,21 @@ async function run() {
 				.catch((err) => res.send(err));
 		});
 
+		app.get('/student/classes/enrolled', (req, res) => {
+			const email = req.query.email;
+			const options = {
+				projection: {
+					name: 1,
+					instructor_name: 1,
+					img: 1,
+				},
+			};
+
+			getClassesId('enrolledClasses', email)
+				.then((classIds) => getClasses(classIds, options))
+				.then((classes) => res.send(classes))
+				.catch((err) => res.status(500).send(err));
+		});
 
 		// ! Instructor related classes API's
 		app.get('/instructor/classes', async (req, res) => {
