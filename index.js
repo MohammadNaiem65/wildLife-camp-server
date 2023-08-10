@@ -63,7 +63,7 @@ async function run() {
 
 		// * Managing the routes
 		app.get('/', (req, res) => {
-			res.send('Welcome to Wild Life Camp');
+			res.send("Welcome to WildLife Camp's API server");
 		});
 
 		// ! User related API's
@@ -113,6 +113,14 @@ async function run() {
 				.limit(6)
 				.toArray();
 			res.send(classes);
+		});
+
+		app.get('/classes/all', async (req, res) => {
+			const result = await classesCollection
+				.find()
+				.sort({ status: 'descending' })
+				.toArray();
+			res.send(result);
 		});
 
 		app.get('/classes/class/:id', async (req, res) => {
@@ -279,6 +287,31 @@ async function run() {
 			const classData = req.body;
 			const result = await classesCollection.insertOne(classData);
 			res.send(result);
+		});
+
+		// ! Admin related classes API's
+		app.patch('/admin/class/:id/status', async (req, res) => {
+			const id = req.params.id;
+			const status = req.query.status;
+
+			if (status === 'approved') {
+				const updateDoc = {
+					$set: {
+						status,
+					},
+				};
+				const result = await classesCollection.updateOne(
+					{ _id: new ObjectId(id) },
+					updateDoc
+				);
+
+				res.send(result);
+			} else {
+				const result = await classesCollection.deleteOne({
+					_id: new ObjectId(id),
+				});
+				res.send(result);
+			}
 		});
 
 		// Send a ping to confirm a successful connection
