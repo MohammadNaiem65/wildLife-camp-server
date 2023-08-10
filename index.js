@@ -67,11 +67,6 @@ async function run() {
 		});
 
 		// ! User related API's
-		app.post('/users', async (req, res) => {
-			const userData = req.body;
-			console.log(userData);
-		});
-
 		app.get('/users/role', async (req, res) => {
 			const email = req.query.email;
 			const roleObj = await usersCollection.findOne(
@@ -195,6 +190,25 @@ async function run() {
 				.then((classIds) => getClasses(classIds, options))
 				.then((classes) => res.send(classes))
 				.catch((err) => res.status(500).send(err));
+		});
+
+		app.patch('/student/classes/selected/remove/:id', async (req, res) => {
+			// Class id and student email
+			const id = req.params.id;
+			const email = req.query.email;
+
+			const updatedDoc = {
+				$pull: {
+					selectedClasses: id,
+				},
+			};
+
+			const result = await usersCollection.updateOne(
+				{ email },
+				updatedDoc
+			);
+
+			res.send(result);
 		});
 
 		app.patch('/student/class/enroll/:id', async (req, res) => {
